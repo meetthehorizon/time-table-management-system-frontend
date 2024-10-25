@@ -1,8 +1,15 @@
-# React + Vite
+# DBMS Project
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### Team Members:
 
-Currently, two official plugins are available:
+|       Name      |    Roll    |
+| --------------- | ---------- |
+| Kshitij Sharma  |  22075045  |
+| Karan Kumar Das |  22075041  |
+| Kolanu Varun    |  22075043  |
+| Chirag Garg     |  22075025  |
+| Jaydeep Singh   |  22075037  |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Introduction
+
+This project is a part of the Database Management Systems course at IIT BHU. It aims to demonstrate the practical application of database concepts learned throughout the course.
