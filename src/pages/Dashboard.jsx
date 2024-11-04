@@ -9,7 +9,6 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useContext(UserContext);
     const [init, setInit] = useState(false)
-    console.log(isAuthenticated, user)
 
     useEffect(() => {
         if (!isAuthenticated && init) {
@@ -32,7 +31,7 @@ export default function Dashboard() {
                         <h2 className="text-2xl font-semibold text-gray-700">Email: <span className="font-normal">{user.email}</span></h2>
                         <h2 className="text-2xl font-semibold text-gray-700">Phone: <span className="font-normal">{user.phone}</span></h2>
                         <h2 className="text-2xl font-semibold text-gray-700">Address: <span className="font-normal">{user.address}</span></h2>
-                        <h2 className="text-2xl font-semibold text-gray-700">Role: <span className="font-normal">{user.roles}</span></h2>
+                        <h2 className="text-2xl font-semibold text-gray-700">Role: <span className="font-normal break-words">{user.roles.join(',')}</span></h2>
                     </div>
                 </div>
             </div>

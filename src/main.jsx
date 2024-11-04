@@ -6,6 +6,8 @@ import { UserProvider } from './context/UserContext.jsx'
 import { RouterProvider } from 'react-router-dom'
 import { router } from './router.jsx'
 
+export const token = localStorage.getItem('token')
+export const userid = localStorage.getItem('userid')
 export const server = "http://localhost:8005"
 
 const AppWrapper = () => {
