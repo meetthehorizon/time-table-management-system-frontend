@@ -4,6 +4,8 @@ import Registration from "./pages/Registration";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import AllUser from "./pages/AllUser";
+import Schools from "./pages/Schools";
+import SchoolUsers from "./pages/SchoolUsers";
 
 export const router = createBrowserRouter([
     {
@@ -25,5 +27,13 @@ export const router = createBrowserRouter([
     {
         path: "/admin/all",
         element: <AllUser />,
+    },
+    {
+        path: "/schools",
+        element: <Schools />,
+    },
+    {
+        path: "/school/:id/users",
+        element: <SchoolUsers />,
     }
 ]);

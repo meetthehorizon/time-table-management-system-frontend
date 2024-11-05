@@ -24,8 +24,6 @@ const AllUser = () => {
         fetchAllUsers().then((data) => {
             if (data) {
                 setUsers(data);
-            } else {
-                navigate('/home');
             }
         });
 

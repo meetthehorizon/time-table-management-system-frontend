@@ -64,7 +64,7 @@ export default function Login() {
                     <form className='w-full flex-col space-y-5' onSubmit={submitHandler}>
                         <Inputfield icon='email' placeholder='Email' name='email' value={email} onChange={setEmail} type='text' />
                         <Inputfield icon='lock' placeholder='password' name='password' value={password} onChange={setPassword} type='password' />
-                        <button type='submit' className='w-4/5 h-11 bg-[#0b6ab8] cursor-pointer text-white'>REGISTER</button>
+                        <button type='submit' className='w-4/5 h-11 bg-[#0b6ab8] cursor-pointer text-white'>LOGIN</button>
                         <div className='pl-28 text-gray-500'>New Member? <Link to='/register' className='text-blue-600'>Register Now</Link></div>
                     </form>
 
