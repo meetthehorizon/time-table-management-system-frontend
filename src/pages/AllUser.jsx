@@ -5,6 +5,8 @@ import axios from 'axios';
 import { server } from '../main';
 import Navbar from '../components/Navbar';
 import { fetchAllUsers } from '../utils/FetchAllUser';
+import { ErrorHandler } from '../utils/ErrorHandler';
+import GetUser from '../utils/GetUser';
 
 const AllUser = () => {
 
@@ -17,6 +19,10 @@ const AllUser = () => {
     const [role, setRole] = useState(null);
     const [roleName, setRoleName] = useState('');
     const [roleDelete, setRoleDelete] = useState(false);
+    const [showTeacherForm, setShowTeacherForm] = useState(null);
+    const [teacherDetails, setTeacherDetails] = useState({ subject_id: '', position: '' });
+    const [showEmployeeForm, setShowEmployeeForm] = useState(null);
+    const [employeeDetails, setEmployeeDetails] = useState({ schoolId: '' });
 
     const navigate = useNavigate();
 
@@ -25,19 +31,36 @@ const AllUser = () => {
             if (data) {
                 setUsers(data);
             }
+            else {
+                navigate('/');
+            }
         });
-
         if (updateForm) {
+
             const user = users.find(user => user.id === updateForm);
             setNewUser({
                 name: user.name,
                 email: user.email,
                 phone: user.phone,
-                address: user.address
+                address: user.address,
+                roles: user.roles
             });
+            if (user.roles.includes('ROLE_TEACHER')) {
+                setTeacherDetails({
+                    subject_id: user.subjectId || '',
+                    position: user.position || ''
+                });
+            }
+            if (user.roles.includes('ROLE_EMPLOYEE')) {
+                setEmployeeDetails({
+                    schoolId: user.schoolId || ''
+                });
+            }
         }
         else {
             setNewUser({ name: '', email: '', roles: '', password: '', address: '', phone: '' });
+            setTeacherDetails({ subject_id: '', position: '' });
+            setEmployeeDetails({ schoolId: '' });
         }
     }, [refresh, role, updateForm]);
 
@@ -60,49 +83,57 @@ const AllUser = () => {
         }
         catch (error) {
             console.log(error.response);
-            const errorData = error.response?.data || {};
-            if (errorData.email) {
-                toast.error(errorData.email);
-            }
-            if (errorData.phone) {
-                toast.error(errorData.phone);
-            }
-            if (errorData.password) {
-                toast.error(errorData.password);
-            }
-            if (errorData.address) {
-                toast.error(errorData.address);
-            }
-            if (errorData.name) {
-                toast.error(errorData.name);
-            }
-            else {
-                toast.error(errorData.detail || 'An error occurred');
-            }
+            ErrorHandler(error);
         }
     }
 
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.put(`${server}/users/${updateForm}`,
-                {
-                    name: newUser.name,
-                    email: newUser.email,
-                    phone: newUser.phone,
-                    address: newUser.address
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    }
-                });
+            let body = {
+                name: newUser.name,
+                email: newUser.email,
+                phone: newUser.phone,
+                address: newUser.address,
+            };
+            if (newUser.roles.includes('ROLE_TEACHER')) {
+                body = {
+                    user: {
+                        name: newUser.name,
+                        email: newUser.email,
+                        phone: newUser.phone,
+                        address: newUser.address,
+                    },
+                    subjectId: teacherDetails.subject_id,
+                    position: teacherDetails.position
+                };
+            } else if (newUser.roles.includes('ROLE_EMPLOYEE')) {
+                body = {
+                    user: {
+                        name: newUser.name,
+                        email: newUser.email,
+                        phone: newUser.phone,
+                        address: newUser.address,
+                    },
+                    schoolId: employeeDetails.schoolId
+                };
+            }
+            const endpoint = newUser.roles.includes('ROLE_TEACHER') ? `${server}/teachers/${updateForm}` :
+                newUser.roles.includes('ROLE_EMPLOYEE') ? `${server}/employee/${updateForm}` :
+                    `${server}/users/${updateForm}`;
+            const response = await axios.put(endpoint, body, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                }
+            });
             toast.success('User Updated Successfully');
             setRefresh(!refresh);
             setUpdateForm(null);
             setShowForm(false);
             setNewUser({ name: '', email: '', roles: '', password: '', address: '', phone: '' });
+            setTeacherDetails({ subject_id: '', position: '' });
+            setEmployeeDetails({ schoolId: '' });
         }
         catch (error) {
             toast.error('User Update Failed');
@@ -145,9 +176,17 @@ const AllUser = () => {
             setRefresh(!refresh);
             setRoleName('');
             toast.success('Role Added Successfully');
+            const storeRole = role;
             setRole(null);
+            if (roleName === 'ROLE_TEACHER') {
+                setShowTeacherForm(storeRole);
+            }
+            if (roleName === 'ROLE_EMPLOYEE') {
+                setShowEmployeeForm(storeRole);
+            }
         }
         catch (error) {
+            console.log(error);
             toast.error('Role Addition Failed');
         }
     }
@@ -179,6 +218,61 @@ const AllUser = () => {
     const handleFormChange = (e) => {
         const { name, value } = e.target;
         setNewUser({ ...newUser, [name]: value });
+    }
+
+    const handleTeacherFormChange = (e) => {
+        const { name, value } = e.target;
+        setTeacherDetails({ ...teacherDetails, [name]: value });
+    }
+
+    const handleTeacherFormSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.put(`${server}/teachers/${showTeacherForm}`, {
+                subjectId: teacherDetails.subject_id,
+                position: teacherDetails.position
+            },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+            setShowTeacherForm(null);
+            setTeacherDetails({ subject_id: '', position: '' });
+            toast.success('Teacher Details Added Successfully');
+        }
+        catch (error) {
+            console.log(error.response);
+            toast.error(error.response.data.detail);
+        }
+    }
+
+    const handleEmployeeFormChange = (e) => {
+        const { name, value } = e.target;
+        setEmployeeDetails({ ...employeeDetails, [name]: value });
+    }
+
+    const handleEmployeeFormSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.put(`${server}/employee/${showEmployeeForm}`, {
+                schoolId: employeeDetails.schoolId
+            },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+            setShowEmployeeForm(null);
+            setEmployeeDetails({ schoolId: '' });
+            toast.success('Employee Details Added Successfully');
+        }
+        catch (error) {
+            console.log(error.response);
+            toast.error(error.response.data.detail);
+        }
     }
 
     const roles = ['ROLE_USER',
@@ -264,6 +358,49 @@ const AllUser = () => {
                                         required
                                     />
                                 </div>
+                                {updateForm && newUser.roles.includes('ROLE_TEACHER') && (
+                                    <>
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700">Subject ID:</label>
+                                            <input
+                                                type="text"
+                                                name="subject_id"
+                                                value={teacherDetails.subject_id}
+                                                onChange={handleTeacherFormChange}
+                                                className="border p-2 rounded w-full"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700">Position:</label>
+                                            <select
+                                                name="position"
+                                                value={teacherDetails.position}
+                                                onChange={handleTeacherFormChange}
+                                                className="border p-2 rounded w-full"
+                                                required
+                                            >
+                                                <option value="" disabled>Select a Position</option>
+                                                <option value="PRT">PRT</option>
+                                                <option value="TGT">TGT</option>
+                                                <option value="PGT">PGT</option>
+                                            </select>
+                                        </div>
+                                    </>
+                                )}
+                                {updateForm && newUser.roles.includes('ROLE_EMPLOYEE') && (
+                                    <div className="mb-4">
+                                        <label className="block text-gray-700">School ID:</label>
+                                        <input
+                                            type="text"
+                                            name="schoolId"
+                                            value={employeeDetails.schoolId}
+                                            onChange={handleEmployeeFormChange}
+                                            className="border p-2 rounded w-full"
+                                            required
+                                        />
+                                    </div>
+                                )}
                                 <div className="flex justify-end">
                                     <button
                                         type="button"
@@ -325,6 +462,91 @@ const AllUser = () => {
                         </div>
                     )
                 }
+                {(showTeacherForm) && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-white p-6 rounded shadow-lg w-1/3">
+                            <h2 className="text-xl font-bold mb-4">Add Teacher Details</h2>
+                            <form onSubmit={handleTeacherFormSubmit}>
+                                <div className="mb-4">
+                                    <label className="block text-gray-700">Subject ID:</label>
+                                    <input
+                                        type="text"
+                                        name="subject_id"
+                                        value={teacherDetails.subject_id}
+                                        onChange={handleTeacherFormChange}
+                                        className="border p-2 rounded w-full"
+                                        required
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label className="block text-gray-700">Position:</label>
+                                    <select
+                                        name="position"
+                                        value={teacherDetails.position}
+                                        onChange={handleTeacherFormChange}
+                                        className="border p-2 rounded w-full"
+                                        required
+                                    >
+                                        <option value="" disabled>Select a Position</option>
+                                        <option value="PRT">PRT</option>
+                                        <option value="TGT">TGT</option>
+                                        <option value="PGT">PGT</option>
+                                    </select>
+                                </div>
+                                <div className="flex justify-end">
+                                    <button
+                                        type="button"
+                                        className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
+                                        onClick={() => setShowTeacherForm(null)}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                                    >
+                                        Submit
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+                {(showEmployeeForm) && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-white p-6 rounded shadow-lg w-1/3">
+                            <h2 className="text-xl font-bold mb-4">Add Employee Details</h2>
+                            <form onSubmit={handleEmployeeFormSubmit}>
+                                <div className="mb-4">
+                                    <label className="block text-gray-700">School ID:</label>
+                                    <input
+                                        type="text"
+                                        name="schoolId"
+                                        value={employeeDetails.schoolId}
+                                        onChange={handleEmployeeFormChange}
+                                        className="border p-2 rounded w-full"
+                                        required
+                                    />
+                                </div>
+                                <div className="flex justify-end">
+                                    <button
+                                        type="button"
+                                        className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
+                                        onClick={() => setShowEmployeeForm(null)}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                                    >
+                                        Submit
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
                 <table className="min-w-full bg-white">
                     <thead>
                         <tr>

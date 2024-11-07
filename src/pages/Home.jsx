@@ -12,7 +12,7 @@ export default function Home() {
         if (!isAuthenticated) {
             navigate('/login');
         }
-    }, [])
+    }, [isAuthenticated])
 
     return (
         <div className="min-h-screen bg-gray-100 text-gray-800">

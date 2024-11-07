@@ -2,20 +2,21 @@ import React, { useEffect } from 'react'
 import { useContext } from 'react'
 import { UserContext } from '../context/UserContext'
 import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
 import Navbar from '../components/Navbar'
 
 export default function Dashboard() {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useContext(UserContext);
-    const [init, setInit] = useState(false)
 
     useEffect(() => {
-        if (!isAuthenticated && init) {
+        if (!isAuthenticated) {
             navigate('/login');
         }
-        setInit(true);
-    }, [isAuthenticated, init]);
+    }, [isAuthenticated, user]);
+
+    if (!isAuthenticated) {
+        return <div>You are not authenticated. Please log in.</div>;
+    }
 
     if (!user) {
         return <div>Loading...</div>;
@@ -32,6 +33,17 @@ export default function Dashboard() {
                         <h2 className="text-2xl font-semibold text-gray-700">Phone: <span className="font-normal">{user.phone}</span></h2>
                         <h2 className="text-2xl font-semibold text-gray-700">Address: <span className="font-normal">{user.address}</span></h2>
                         <h2 className="text-2xl font-semibold text-gray-700">Role: <span className="font-normal break-words">{user.roles.join(',')}</span></h2>
+                        {user.roles.includes('ROLE_TEACHER') && user.teacher && (
+                            <>
+                                <h2 className="text-2xl font-semibold text-gray-700">Subject ID: <span className="font-normal">{user.teacher.subjectId}</span></h2>
+                                <h2 className="text-2xl font-semibold text-gray-700">Position: <span className="font-normal">{user.teacher.position}</span></h2>
+                            </>
+                        )}
+                        {user.roles.includes('ROLE_EMPLOYEE') && (
+                            <>
+                                <h2 className="text-2xl font-semibold text-gray-700">School Name: <span className="font-normal">{user.schoolName}</span></h2>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

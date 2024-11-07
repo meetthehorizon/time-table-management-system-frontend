@@ -16,8 +16,7 @@ const Navbar = () => {
         if (!isAuthenticated) {
             navigate('/login');
         }
-    }, [isAuthenticated])
-
+    }, [isAuthenticated]);
     return (
         <div className="bg-blue-500 p-4">
             <div className="container mx-auto flex justify-between items-center">
@@ -27,6 +26,8 @@ const Navbar = () => {
                 <div className="space-x-4">
                     <Link to="/" className="text-white hover:text-gray-200">Home</Link>
                     <Link to="/dashboard" className="text-white hover:text-gray-200">Dashboard</Link>
+                    <Link to="/schools" className="text-white hover:text-gray-200">Schools</Link>
+                    <Link to="/subjects" className="text-white hover:text-gray-200">Subject</Link>
                     <Link to="/admin/all" className="text-white hover:text-gray-200">All User</Link>
                     <span onClick={logoutHandler} className="text-white hover:text-gray-200 cursor-pointer">Logout </span>
                 </div>
